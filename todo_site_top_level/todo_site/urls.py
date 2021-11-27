@@ -19,9 +19,9 @@ from todo import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    
+
     # Path for the authorization of new users stuff
     path('signup/', views.signupuser, name='signupuser'),
-    
+
     # Todos
 ]
