@@ -1,7 +1,7 @@
 ## Walkthrough
 
 This code creates a simple django website that allows users to create accounts and save personal todo lists.
-At some point I may revise this to mimic the tracking project. Or I may make that in a different repo.
+At some point I may revise this to mimic the tracking project I'm working on at EPA. Or I may make that in a different repo.
 Anyway this whole thing is based on a Udemy course called _Django 3 - Full Stack Websites with Python_ by Nick Walter: https://www.udemy.com/course/django-3-make-websites-with-python-tutorial-beginner-learn-bootstrap/
 
 Here is what I did.
