@@ -53,3 +53,4 @@ Then you'll want to add the following to the top of settings.py in the todo_site
 
 And you'll want to add this line in place of the old secret key assignment: `SECRET_KEY = str(os.getenv('SECRET_KEY'))`
 
+That's it! Now you're secret key won't be posted to the internet. Just make sure to change the key from the default value.
