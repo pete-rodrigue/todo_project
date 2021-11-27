@@ -73,5 +73,43 @@ Views in django are the functions that actually render our HTML templates for th
 
 `path('signup/', views.signupuser, name='signupuser'),`
 
-This just tells django that we're going to have a url path called something like "home/signup" and it's going to involve a view function called signupuser, which we'll need to write. 
+This just tells django that we're going to have a url path called something like "home/signup" and it's going to involve a view function called signupuser, which we'll need to write. So in the `todo` folder, let's add this function to `views.py`:
+
+```
+def signupuser(request):
+    return render(request, template_name='signupuser_template.html')
+```
+
+Then we need to create that `signupuser_template.html` file in the `templates` folder of the `todo` folder. For now, we can just stick some placeholder text in that HTML file, like `<h1>Hello! Sign up soon!</h1>`. If you run local server again and go to _localhost:8000/signup_ you should see that text now.
+
+Now we're going to pass forward a Django form in `views.py`, rather than creating a form from scratch. Put this at the top of `views.py`:
+
+`from django.contrib.auth.forms import UserCreationForm`
+
+Then revise the view we just made like this:
+
+```
+def signupuser(request):
+    return render(request,
+            template_name='signupuser_template.html',
+            context = {'form':UserCreationForm()})
+```
+
+and go back to our `signupuser_template.html` template and add this:
+
+`{{ form.as_p }}`
+
+If you refresh the signup page now, you should see some basic sign in content. The "as_p" method just formats the text a little by wrapping it in `<p>` tags. You don't have to have that bit.
+
+Now wrap that form bit in a form tag, and add a submit button, so our users can submit their sign up info, like this:
+
+```
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Sign up</button>
+</form>
+```
+
+The `{% csrf_token %}` bit is required by Django. It helps prevent a type of attack called a Cross Site Request Forgery (more on that here: https://www.youtube.com/watch?v=vRBihr41JTo). Note that a "post" doesn't put any text into the URL bar--we wouldn't want people's passwords in the URL bar!
 
