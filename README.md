@@ -101,6 +101,10 @@ and go back to our `signupuser_template.html` template and add this:
 
 If you refresh the signup page now, you should see some basic sign in content. The "as_p" method just formats the text a little by wrapping it in `<p>` tags. You don't have to have that bit.
 
+At this point, your sign up page should look something like this:
+
+<img width="445" alt="bare bones sign up page" src="https://user-images.githubusercontent.com/8962291/143718477-6a82cd58-c78b-4b26-99ca-2fa302cd74c3.png">
+
 Now wrap that form bit in a form tag, and add a submit button, so our users can submit their sign up info, like this:
 
 ```
@@ -113,3 +117,40 @@ Now wrap that form bit in a form tag, and add a submit button, so our users can 
 
 The `{% csrf_token %}` bit is required by Django. It helps prevent a type of attack called a Cross Site Request Forgery (more on that here: https://www.youtube.com/watch?v=vRBihr41JTo). Note that a "post" doesn't put any text into the URL bar--we wouldn't want people's passwords in the URL bar!
 
+Ok! Let's revise the `signupuser` view to create a new user in our backend database. Make these changes:
+
+```
+from django.shortcuts import render
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+# Create your views here.
+def signupuser(request):
+    '''
+    note that we don't have to create a new "user"
+    model or database in our project, because
+    Django comes pre-loaded with a user database!
+    '''
+    if request.method == 'GET':
+        # if the request is "get" just show the webpage
+        return render(request,
+            template_name='signupuser_template.html',
+            context = {'form':UserCreationForm()})
+
+    else:
+        # if the method is "post", create and save a new user!
+        if request.POST['password1'] == request.POST['password2']:
+            new_user = User.objects.create_user(
+                                 username=request.POST['username'],
+                                 password=request.POST['password1'])
+            new_user.save()
+        else:
+            # we'll put code here telling the user their passwords
+            # didn't match!
+            print("passwords didn't match!")
+```
+
+
+Now let's close the server and create a superuser so we can log into the admin page and see the backend database. In the command line, execute `python manage.py createsuperuser`, then create a user name and password. Re-run the server and go to _localhost:8000/admin_ to log in. If you log in and look at the Users admin page, you should see the super user you just created.
+
+Now in another tab, go to _localhost:8000/signup_ and create a new user. You'll get an error page, but if you go back to the admin page, you'll see the user you just created.
