@@ -65,5 +65,13 @@ Hit ctrl+c in the command line to stop running the "server." Then execute `pytho
 
 ### Building the sign up feature
 
+We need to create a user signup page, and tell the website about this signup page. Go to `urls.py` in `todo_site` and add this import:
 
+`from todo import views`
+
+Views in django are the functions that actually render our HTML templates for the user. Each app has its own set of views. We'll get to the `views.py` file in the todo app ina minute. Add this line to the urlpatterns list in `settings.py`:
+
+`path('signup/', views.signupuser, name='signupuser'),`
+
+This just tells django that we're going to have a url path called something like "home/signup" and it's going to involve a view function called signupuser, which we'll need to write. 
 
