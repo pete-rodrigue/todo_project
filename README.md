@@ -195,3 +195,32 @@ Now if you go back and try to create another user with that same name, you shoul
 
 <img width="465" alt="an error msg on the signup page" src="https://user-images.githubusercontent.com/8962291/143784393-949da6db-021a-43e5-a775-654b296069a6.png">
 
+
+### Logging in 
+
+Ok. After someone signs up, we want them to be directed to the website and logged in, not just forwarded to an error page. Add this to the top of `views.py`:
+
+`from django.contrib.auth import login`
+
+And also, import `redirect` from `django.shortcuts`. Then add this after `user.save()`
+
+```
+login(request, new_user)
+return redirect(to='current_todos')
+```
+
+add this new view:
+
+```
+def current_todos(request):
+    # the page with the current todo items
+    return render(request, template_name='current_todos_template.html')
+```
+
+create a new template called `current_todos_template.html` with some placeholder text in it (like "todos to come").
+
+and add this in the `urlpatterns` list in `urls.py`:
+
+`path('current_todos/', views.current_todos, name='current_todos'),`
+
+Now go back to the sign in page and create a new user. You should be able to create a new user and see that landing page with the placeholder text.
