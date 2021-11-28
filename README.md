@@ -224,3 +224,38 @@ and add this in the `urlpatterns` list in `urls.py`:
 `path('current_todos/', views.current_todos, name='current_todos'),`
 
 Now go back to the sign in page and create a new user. You should be able to create a new user and see that landing page with the placeholder text.
+
+
+### Showing the user that they're logged in
+
+Add a new template called `base_template.html` in our `templates` folder. The template should look like this:
+
+```
+{% if user.is_authenticated %}
+
+Logged in as {{ user.username }}
+
+<a href="#">Logout</a>
+
+{% else %}
+
+<a href="#">Signup</a>
+<a href="#">Login</a>
+
+{% endif %}
+
+{% block my_content %}
+{% endblock %}
+```
+
+Then go back to our `current_todos_template.html` and replace the placeholder text with this:
+
+```
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+{% endblock %}
+```
+
+Let's also add that little bit to the top of our sign in page, so people can see that login option; just remember that the `{% endblock %}` has to go after the code we already had in there, because the "my_content" block wraps around the html stuff. Note that clicking those signup/login buttons won't do anything right now, because the href directs to `#`.
