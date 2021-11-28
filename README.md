@@ -259,3 +259,6 @@ Then go back to our `current_todos_template.html` and replace the placeholder te
 ```
 
 Let's also add that little bit to the top of our sign in page, so people can see that login option; just remember that the `{% endblock %}` has to go after the code we already had in there, because the "my_content" block wraps around the html stuff. Note that clicking those signup/login buttons won't do anything right now, because the href directs to `#`.
+
+### Logging users out
+
