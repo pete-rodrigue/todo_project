@@ -145,12 +145,53 @@ def signupuser(request):
                                  password=request.POST['password1'])
             new_user.save()
         else:
-            # we'll put code here telling the user their passwords
-            # didn't match!
-            print("passwords didn't match!")
+            # if the 2 passwords don't match, basically serve the user
+            # the same page again,
+            return render(request,
+                template_name='signupuser_template.html',
+                context = {'form':UserCreationForm(),
+                           'some_kind_of_error':'Passwords did not match!'})
+
 ```
 
+Then go back to the html template and add this error message bit:
+
+```
+<h1>Sign up</h1>
+
+<h2>{{some_kind_of_error}}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Sign up</button>
+</form>
+
+```
 
 Now let's close the server and create a superuser so we can log into the admin page and see the backend database. In the command line, execute `python manage.py createsuperuser`, then create a user name and password. Re-run the server and go to _localhost:8000/admin_ to log in. If you log in and look at the Users admin page, you should see the super user you just created.
 
-Now in another tab, go to _localhost:8000/signup_ and create a new user. You'll get an error page, but if you go back to the admin page, you'll see the user you just created.
+Now in another tab, go to _localhost:8000/signup_ and create a new user. First, try entering 2 different passwords; you should get that error message. Then try creating a user with identical passwords. You'll still get an error page, but if you go back to the admin page, you'll see the user you just created.
+
+Now try creating another user with the same user name. You should get an error page, showing an "IntegrityError", because you can't create two users with the same user name. This error gets triggered when we try to execute that `user.save()` line in `views.py`. So let's go in an put a `try: except:` statement around that bit, like this:
+
+```
+if request.POST['password1'] == request.POST['password2']:
+            try:
+                new_user = User.objects.create_user(
+                                 username=request.POST['username'],
+                                 password=request.POST['password1'])
+                new_user.save()
+            except IntegrityError:
+                return render(request,
+                    template_name='signupuser_template.html',
+                    context = {'form':UserCreationForm(),
+                               'some_kind_of_error':'Already a user with that name, please choose a new username!'})
+```
+
+You'll also need to import the relevant module in `views.py`: `from django.db import IntegrityError`
+
+Now if you go back and try to create another user with that same name, you should get the same page, but with an error message.
+
+<img width="465" alt="an error msg on the signup page" src="https://user-images.githubusercontent.com/8962291/143784393-949da6db-021a-43e5-a775-654b296069a6.png">
+
