@@ -1,8 +1,16 @@
-<h1>hello, signup here soon!</h1>
+{% extends 'base_template.html' %}
 
+{% block my_content %}
+
+
+<h1>Sign up</h1>
+
+<h2>{{some_kind_of_error}}</h2>
 
 <form method="post">
   {% csrf_token %}
   {{ form.as_p }}
   <button type="submit">Sign up</button>
 </form>
+
+{% endblock %}

@@ -1,6 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
+from django.db import IntegrityError
+from django.contrib.auth import login
 
 # Create your views here.
 def signupuser(request):
@@ -14,15 +16,33 @@ def signupuser(request):
         return render(request,
             template_name='signupuser_template.html',
             context = {'form':UserCreationForm()})
-
     else:
         # if the method is "post", create and save a new user!
         if request.POST['password1'] == request.POST['password2']:
-            new_user = User.objects.create_user(
+            try:
+                new_user = User.objects.create_user(
                                  username=request.POST['username'],
                                  password=request.POST['password1'])
-            new_user.save()
+                new_user.save()
+                login(request, new_user)
+
+                return redirect(to='current_todos')
+
+            except IntegrityError:
+                return render(request,
+                    template_name='signupuser_template.html',
+                    context = {'form':UserCreationForm(),
+                               'some_kind_of_error':'Already a user with that name, please choose a new username!'})
         else:
-            # we'll put code here telling the user their passwords
-            # didn't match!
-            print("passwords didn't match!")
+            # if the 2 passwords don't match, basically serve the user
+            # the same page again,
+            return render(request,
+                template_name='signupuser_template.html',
+                context = {'form':UserCreationForm(),
+                           'some_kind_of_error':'Passwords did not match!'})
+
+
+
+def current_todos(request):
+    # the page with the current todo items
+    return render(request, template_name='current_todos_template.html')
