@@ -22,7 +22,12 @@ urlpatterns = [
 
     # Path for the authorization of new users stuff
     path('signup/', views.signupuser, name='signupuser'),
+    path('logout/', views.logoutuser, name='logoutuser'),
+    path('login/', views.loginuser, name='loginuser'),
 
     # Todos
     path('current_todos/', views.current_todos, name='current_todos'),
+
+    # home page
+    path('', views.home, name='home'),
 ]
