@@ -438,7 +438,7 @@ def create_todo(request):
             template_name='create_todo_template.html',
             context = {'form':TodoForm()})
     else:
-        form = todo_list_item(request.POST)
+        form = TodoForm(request.POST)
         new_todo = form.save(commit=False)  # don't commit to database yet
         new_todo.user = request.user        # add user, then save
         new_todo.save()
