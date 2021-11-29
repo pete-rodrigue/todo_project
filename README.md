@@ -262,3 +262,102 @@ Let's also add that little bit to the top of our sign in page, so people can see
 
 ### Logging users out
 
+First, let's add a new path to `url.py` for the logout page, and (finally) one for the home page:
+
+```
+path('logout/', views.logoutuser, name='logoutuser'),
+path('', views.home, name='home'),
+```
+
+Then let's tweak that href bit in our base template to remove this: `<a href="#">Logout</a>` and replace it with this:
+
+```
+<form action="{% url 'logoutuser' %}" method="post">
+  {% csrf_token %}
+  <button type="submit">Logout</button>
+</form>
+```
+
+Then, in `views.py`, add this new view and a view for the home page:
+
+```
+def logoutuser(request):
+    # logs out the user
+    if request.method == "POST":
+        logout(request)
+
+        return redirect('home')
+        
+   
+def home(request):
+    # the home page
+    return render(request, template_name='home_template.html')
+```
+
+Then we'll create the template for the home page.
+
+```
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+<h1>Home page</h1>
+
+{% endblock %}
+```
+ 
+Now if you go back to your website and click _Logout_, you should be logged out and sent to the homepage.
+
+### Logging in existing users
+
+Start by creating a new url path in `urls.py`:
+
+```
+path('login/', views.loginuser, name='loginuser'),
+```
+
+Then import `AuthenticationForm` from `django.contrib.auth.forms` in `views.py`.
+Then add the relevant view in `views.py`:
+
+```
+
+```
+
+And add a login html template (very similar to our sign up template):
+
+```
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+<h1>Login</h1>
+
+<h2>{{some_kind_of_error}}</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Login</button>
+</form>
+
+{% endblock %}
+```
+
+Let's also make the _signup_ and _login_ links do something in our base template. In that template, replace the # sign in the href with the urls, like this:
+
+```
+<a href="{% url 'signupuser' %}">Signup</a>
+<a href="{% url 'loginuser' %}">Login</a>
+```
+
+
+Just to recap here, the flow looks like:
+
+reference to url --> urls.py --> reference to a view --> views.py --> view does something
+
+
+
+
+
+
+
