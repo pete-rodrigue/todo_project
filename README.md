@@ -316,11 +316,32 @@ Start by creating a new url path in `urls.py`:
 path('login/', views.loginuser, name='loginuser'),
 ```
 
-Then import `AuthenticationForm` from `django.contrib.auth.forms` in `views.py`.
+Then import `AuthenticationForm` from `django.contrib.auth.forms` and `authenticate` from `django.contrib.auth` in `views.py`.
 Then add the relevant view in `views.py`:
 
 ```
-
+def loginuser(request):
+    # logs in an existing user
+    if request.method == 'GET':
+        # if the request is "get" just show the login page
+        return render(request,
+            template_name='login_template.html',
+            context = {'form':AuthenticationForm()})
+    else:
+        # if there's a POST, try to authenticate the user
+        existing_user = authenticate(request,
+                                     username=request.POST['username'],
+                                     password=request.POST['password'])
+        if existing_user is None:
+            # if there's an error, show the log in page w/ an error message
+            return render(request,
+                template_name='login_template.html',
+                context = {'form':AuthenticationForm(),
+                           'some_kind_of_error':'Username and password did not match'})
+        else:  # if we can authenticate the user...
+            # log them in and send them to the current todos page
+            login(request, existing_user)
+            return redirect(to='current_todos')
 ```
 
 And add a login html template (very similar to our sign up template):
@@ -350,10 +371,120 @@ Let's also make the _signup_ and _login_ links do something in our base template
 <a href="{% url 'loginuser' %}">Login</a>
 ```
 
+Ok! You should be able to log into your website now using an account you've already created.
 
 Just to recap here, the flow looks like:
 
 reference to url --> urls.py --> reference to a view --> views.py --> view does something
+
+
+### database time!
+
+Now we're going to make our todo model/database, to store our todo list items.
+
+In `models.py` let's add a todo data model:
+
+```
+from django.db import models
+from django.contrib.auth.models import User
+
+# Create your models here.
+class todo_list_item(models.Model):
+    '''
+    This is a single item in our todo list.
+    '''
+
+    title = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    time_created = models.DateTimeField(auto_now_add=True)
+    time_completed = models.DateTimeField(blank=True, null=True)
+    important = models.BooleanField(default=False)
+    # gotta tie the todo object to a specific user
+    # so we're gonna tie this model to the user model
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return self.title
+```
+
+Then execute `python manage.py makemigrations` and `python manage.py migrate`. Then add this to `admin.py`:
+
+```
+from django.contrib import admin
+from .models import todo_list_item
+
+
+class TodoAdmin(admin.ModelAdmin):
+    readonly_fields = ('time_created',)
+
+# Register your models here.
+admin.site.register(todo_list_item, TodoAdmin)
+```
+
+You should be able to log into the admin site and manually add todos now. To allow users to create their own todos we start in `urls.py`; add this path:
+
+`path('create/', views.create_todo, name='create_todo'),`
+
+Then add this view:
+
+```
+from .forms import TodoForm
+
+def create_todo(request):
+    # allows a user to create a new todo
+    if request.method == "GET":
+        return render(request,
+            template_name='create_todo_template.html',
+            context = {'form':TodoForm()})
+    else:
+        form = todo_list_item(request.POST)
+        new_todo = form.save(commit=False)  # don't commit to database yet
+        new_todo.user = request.user        # add user, then save
+        new_todo.save()
+
+        return redirect(to='current_todos')   # send the user to the current
+                                              # todos webpage. 
+```
+
+We will update that `else` bit later. Now add the template:
+
+```
+{% extends 'base_template.html' %}
+{% block my_content %}
+<h1>Create</h1>
+<h2>{{ error }}</h2>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Create</button>
+</form>
+{% endblock %}
+```
+
+Now add a file called `forms.py` in the main folder (the one with `admin.py` and `models.py`) and put this in it:
+
+```
+from django.forms import ModelForm
+from .models import todo_list_item
+
+# makes the form that allows us to add todo items
+class TodoForm(ModelForm):
+    class Meta:
+        model = todo_list_item
+        fields = ['title', 'description', 'important']
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
