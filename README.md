@@ -438,13 +438,19 @@ def create_todo(request):
             template_name='create_todo_template.html',
             context = {'form':TodoForm()})
     else:
-        form = TodoForm(request.POST)
-        new_todo = form.save(commit=False)  # don't commit to database yet
-        new_todo.user = request.user        # add user, then save
-        new_todo.save()
+        try:
+            form = TodoForm(request.POST)
+            new_todo = form.save(commit=False)  # don't commit to database yet
+            new_todo.user = request.user        # add user, then save
+            new_todo.save()
+        except ValueError:
+            render(request,
+                template_name='create_todo_template.html',
+                context = {'form':TodoForm(),
+                           'some_kind_of_error':"You've entered some bad data!""})
 
         return redirect(to='current_todos')   # send the user to the current
-                                              # todos webpage. 
+                                              # todos webpage.
 ```
 
 We will update that `else` bit later. Now add the template:
@@ -475,8 +481,43 @@ class TodoForm(ModelForm):
         fields = ['title', 'description', 'important']
 ```
 
+What if we want to show the user their current list of todos? We'll do this next.
 
+First, let's import our `todo_list_item` model into `views.py`: `from .models import todo_list_item`. Then let's modify our `current_todos` view, like this:
 
+```
+def current_todos(request):
+    # the page with the current todo items
+    my_todos = todo_list_item.objects.filter(user=request.user,  # ensures users only see their todos
+                                             time_completed__isnull=True)  # ensures completed tasks do not appear
+
+    return render(request,
+                  template_name='current_todos_template.html',
+                  context={'todos_context': my_todos})
+```
+
+And update `current_todos_template.html` like this:
+
+```
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+<h1>Here are you todo list items:</h1>
+
+<ul>
+  {% for todo_item in todos_context %}
+  <li>
+    {% if todo_item.important %}<b>{% endif %}
+    {{ todo_item.title }}
+    {% if todo_item.important %}</b>{% endif %}
+    {% if todo_item.description %}<p>{{todo_item.description}}</p>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
+```
 
 
 
