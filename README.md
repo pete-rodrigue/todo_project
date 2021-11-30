@@ -519,7 +519,15 @@ And update `current_todos_template.html` like this:
 {% endblock %}
 ```
 
+### Allowing the user to update their todo list
 
+Let's start by updating `urls.py`:
+
+```
+path('todo/<int:todo_pk>', views.view_todo, name='view_todo'),
+```
+
+`from django.shortcuts import render, redirect, get_object_or_404`
 
 
 
