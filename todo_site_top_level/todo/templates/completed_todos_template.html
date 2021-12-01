@@ -3,7 +3,7 @@
 
 {% block my_content %}
 
-<h1>Here are your todo list items:</h1>
+<h1>Here are your completed todo list items:</h1>
 
 <ul>
   {% for todo_item in todos_context %}
@@ -13,6 +13,7 @@
     {{ todo_item.title }}
     {% if todo_item.important %}</b>{% endif %}
     </a>
+    <p>{{ todo_item.time_completed }}</p>
     {% if todo_item.description %}<p>{{todo_item.description}}</p>{% endif %}
   </li>
   {% endfor %}

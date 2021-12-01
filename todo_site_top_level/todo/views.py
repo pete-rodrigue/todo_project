@@ -6,6 +6,7 @@ from django.contrib.auth import login, logout, authenticate
 from .forms import TodoForm          # this is our form
 from .models import todo_list_item   # this is our todo list database
 from django.utils import timezone
+from django.contrib.auth.decorators import login_required
 
 
 
@@ -54,7 +55,7 @@ def signupuser(request):
                            'some_kind_of_error':'Passwords did not match!'})
 
 
-
+@login_required
 def logoutuser(request):
     # logs out the user
     if request.method == "POST":
@@ -86,7 +87,7 @@ def loginuser(request):
             login(request, existing_user)
             return redirect(to='current_todos')
 
-
+@login_required
 def current_todos(request):
     # the page with the current todo items
     my_todos = todo_list_item.objects.filter(user=request.user,  # ensures users only see their todos
@@ -96,7 +97,18 @@ def current_todos(request):
                   template_name='current_todos_template.html',
                   context={'todos_context': my_todos})
 
+@login_required
+def completed_todos(request):
+    # the page with the current todo items
+    my_todos = todo_list_item.objects.filter(user=request.user,  # ensures users only see their todos
+                                             time_completed__isnull=False).order_by('-time_completed')  # ensures completed tasks do not appear
 
+    return render(request,
+                  template_name='completed_todos_template.html',
+                  context={'todos_context': my_todos})
+
+
+@login_required
 def create_todo(request):
     # allows a user to create a new todo
     if request.method == "GET":
@@ -118,7 +130,7 @@ def create_todo(request):
         return redirect(to='current_todos')   # send the user to the current
                                               # todos webpage.
 
-
+@login_required
 def view_todo(request, todo_pk):
     # allows a user to view a single todo item
     single_todo = get_object_or_404(todo_list_item,
@@ -143,7 +155,7 @@ def view_todo(request, todo_pk):
                                    'prefilled_form':form,
                                    'some_kind_of_error':"You've entered some bad data!"})
 
-
+@login_required
 def complete_todo(request, todo_pk):
     todo = get_object_or_404(todo_list_item, pk=todo_pk, user=request.user)
     if request.method == 'POST':
@@ -152,7 +164,7 @@ def complete_todo(request, todo_pk):
         return redirect('current_todos')       # send the user to the current
                                               # todos webpage.
 
-
+@login_required
 def delete_todo(request, todo_pk):
     todo = get_object_or_404(todo_list_item, pk=todo_pk, user=request.user)
     if request.method == 'POST':
