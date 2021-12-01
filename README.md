@@ -527,7 +527,104 @@ Let's start by updating `urls.py`:
 path('todo/<int:todo_pk>', views.view_todo, name='view_todo'),
 ```
 
-`from django.shortcuts import render, redirect, get_object_or_404`
+Then we'll add this bit to the top of `views.py`: `from django.shortcuts import render, redirect, get_object_or_404`
+
+
+And we'll add this function to `views.py`:
+
+```
+def view_todo(request, todo_pk):
+    # allows a user to view a single todo item
+    single_todo = get_object_or_404(todo_list_item,
+                                    pk=todo_pk,
+                                    user=request.user)  # ensures users can only open their own todos
+    if request.method == 'GET':
+        form = TodoForm(instance=single_todo)
+        return render(request,
+                      template_name='view_todo_template.html',
+                      context={'single_todo_context':single_todo,
+                               'prefilled_form':form})
+    else:
+        try:
+            revised_form = TodoForm(request.POST, instance=single_todo)
+            revised_form.save()
+            return redirect(to='current_todos')   # send the user to the current
+                                                  # todos webpage.
+        except ValueError:
+            return render(request,
+                          template_name='view_todo_template.html',
+                          context={'single_todo_context':single_todo,
+                                   'prefilled_form':form,
+                                   'some_kind_of_error':"You've entered some bad data!"})
+```
+
+And we'll add this new template: `view_todo_template.html`, which will look like this:
+
+```
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+{{ some_kind_of_error }}
+
+{{ single_todo_context.title }}
+
+<form method="POST">
+  {% csrf_token %}
+  {{ prefilled_form.as_p }}
+  <button type="submit">Save</button>
+</form>
+{% endblock %}
+```
+
+
+### Completing and deleting todos
+
+You know the drill now!
+
+New paths in `urls.py`: 
+
+```
+path('todo/<int:todo_pk>/complete', views.complete_todo, name='complete_todo'),
+path('todo/<int:todo_pk>/delete', views.delete_todo, name='delete_todo'),
+```
+
+
+New view:
+
+```
+from django.utils import timezone
+
+def complete_todo(request, todo_pk):
+    todo = get_object_or_404(todo_list_item, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.time_completed = timezone.now()
+        todo.save()
+        return redirect('current_todos')       # send the user to the current
+                                              # todos webpage.
+
+
+def delete_todo(request, todo_pk):
+    todo = get_object_or_404(todo_list_item, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.delete()
+        return redirect('current_todos')       # send the user to the current
+                                              # todos webpage.
+```
+
+And add these bits to our `view_todo_template`:
+
+```
+<form method="POST" action="{% url 'complete_todo' single_todo_context.id %}">
+  {% csrf_token %}
+  <button type="submit">Complete</button>
+</form>
+
+<form method="POST" action="{% url 'delete_todo' single_todo_context.id %}">
+  {% csrf_token %}
+  <button type="submit">Delete</button>
+</form>
+```
 
 
 
