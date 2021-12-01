@@ -8,9 +8,11 @@
 <ul>
   {% for todo_item in todos_context %}
   <li>
+    <a href="{% url 'view_todo' todo_item.id %}">
     {% if todo_item.important %}<b>{% endif %}
     {{ todo_item.title }}
     {% if todo_item.important %}</b>{% endif %}
+    </a>
     {% if todo_item.description %}<p>{{todo_item.description}}</p>{% endif %}
   </li>
   {% endfor %}

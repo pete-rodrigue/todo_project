@@ -1,0 +1,21 @@
+
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+{{ some_kind_of_error }}
+
+{{ single_todo_context.title }}
+
+<form method="POST">
+  {% csrf_token %}
+  {{ prefilled_form.as_p }}
+  <button type="submit">Save</button>
+</form>
+
+<form method="POST" action="{% url 'complete_todo' single_todo_context.id %}">
+  {% csrf_token %}
+  <button type="submit">Complete</button>
+</form>
+
+{% endblock %}

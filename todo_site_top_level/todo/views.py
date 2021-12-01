@@ -1,11 +1,11 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.contrib.auth import login, logout, authenticate
-from .forms import TodoForm
-from .models import todo_list_item
-
+from .forms import TodoForm          # this is our form
+from .models import todo_list_item   # this is our todo list database
+from django.utils import timezone
 
 
 
@@ -55,17 +55,6 @@ def signupuser(request):
 
 
 
-def current_todos(request):
-    # the page with the current todo items
-    my_todos = todo_list_item.objects.filter(user=request.user,  # ensures users only see their todos
-                                             time_completed__isnull=True)  # ensures completed tasks do not appear
-
-    return render(request,
-                  template_name='current_todos_template.html',
-                  context={'todos_context': my_todos})
-
-
-
 def logoutuser(request):
     # logs out the user
     if request.method == "POST":
@@ -98,6 +87,16 @@ def loginuser(request):
             return redirect(to='current_todos')
 
 
+def current_todos(request):
+    # the page with the current todo items
+    my_todos = todo_list_item.objects.filter(user=request.user,  # ensures users only see their todos
+                                             time_completed__isnull=True)  # ensures completed tasks do not appear
+
+    return render(request,
+                  template_name='current_todos_template.html',
+                  context={'todos_context': my_todos})
+
+
 def create_todo(request):
     # allows a user to create a new todo
     if request.method == "GET":
@@ -117,4 +116,38 @@ def create_todo(request):
                            'some_kind_of_error':"You've entered some bad data!"})
 
         return redirect(to='current_todos')   # send the user to the current
+                                              # todos webpage.
+
+
+def view_todo(request, todo_pk):
+    # allows a user to view a single todo item
+    single_todo = get_object_or_404(todo_list_item,
+                                    pk=todo_pk,
+                                    user=request.user)  # ensures users can only open their own todos
+    if request.method == 'GET':
+        form = TodoForm(instance=single_todo)
+        return render(request,
+                      template_name='view_todo_template.html',
+                      context={'single_todo_context':single_todo,
+                               'prefilled_form':form})
+    else:
+        try:
+            revised_form = TodoForm(request.POST, instance=single_todo)
+            revised_form.save()
+            return redirect(to='current_todos')   # send the user to the current
+                                                  # todos webpage.
+        except ValueError:
+            return render(request,
+                          template_name='view_todo_template.html',
+                          context={'single_todo_context':single_todo,
+                                   'prefilled_form':form,
+                                   'some_kind_of_error':"You've entered some bad data!"})
+
+
+def complete_todo(request, todo_pk):
+    todo = get_object_or_404(todo_list_item, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.time_completed = timezone.now()
+        todo.save()
+        return redirect('current_todos')       # send the user to the current
                                               # todos webpage.
