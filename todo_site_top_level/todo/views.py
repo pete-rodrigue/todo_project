@@ -151,3 +151,11 @@ def complete_todo(request, todo_pk):
         todo.save()
         return redirect('current_todos')       # send the user to the current
                                               # todos webpage.
+
+
+def delete_todo(request, todo_pk):
+    todo = get_object_or_404(todo_list_item, pk=todo_pk, user=request.user)
+    if request.method == 'POST':
+        todo.delete()
+        return redirect('current_todos')       # send the user to the current
+                                              # todos webpage.
