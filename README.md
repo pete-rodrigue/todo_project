@@ -627,10 +627,69 @@ And add these bits to our `view_todo_template`:
 ```
 
 
+### Viewing our completed todos
+
+Add this path in `urls.py`: `path('completed/', views.completed_todos, name='completed_todos'),`
+
+And this view:
+
+```
+def completed_todos(request):
+    # the page with the current todo items
+    my_todos = todo_list_item.objects.filter(user=request.user,  # ensures users only see their todos
+                                             time_completed__isnull=False)  # ensures completed tasks do not appear
+
+    return render(request,
+                  template_name='current_todos_template.html',
+                  context={'todos_context': my_todos})
+```
+
+And a template called `completed_todos_template.html` with this in it:
+
+```
+{% extends 'base_template.html' %}
+
+{% block my_content %}
+
+<h1>Here are your completed todo list items:</h1>
+
+<ul>
+  {% for todo_item in todos_context %}
+  <li>
+    <a href="{% url 'view_todo' todo_item.id %}">
+    {% if todo_item.important %}<b>{% endif %}
+    {{ todo_item.title }}
+    {% if todo_item.important %}</b>{% endif %}
+    </a>
+    <p>{{ todo_item.time_completed }}</p>
+    {% if todo_item.description %}<p>{{todo_item.description}}</p>{% endif %}
+  </li>
+  {% endfor %}
+</ul>
+
+{% endblock %}
+```
 
 
+### tidying up
 
+Let's beef up the base template by adding some nicer styling:
 
+```
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+```
+
+Then revise to add these links:
+
+```
+<a href="{% url 'create_todo' %}">Create todo</a>
+<a href="{% url 'current_todos' %}">Current todos</a>
+<a href="{% url 'completed_todos' %}">Completed todos</a>
+```
+
+Lastly, let's ensure only logged in users can access certain pages. Go to `views.py` and add `from django.contrib.auth.decorators import login_required`. Then add this decorator on the relevant views (i.e. only views users should be able to access when logged in): `@login_required`.
+
+Then go to `settings.py` and add this `LOGIN_URL = '/login/'`. That will forward logged out users to the login page, if they try to access a page that requires login.
 
 
 
