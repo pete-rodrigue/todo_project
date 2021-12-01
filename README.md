@@ -693,7 +693,7 @@ Then go to `settings.py` and add this `LOGIN_URL = '/login/'`. That will forward
 
 
 
-
+That's basically it! Yay!
 
 
 
